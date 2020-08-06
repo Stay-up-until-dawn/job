@@ -1,0 +1,28 @@
+import requests
+import parsel
+from time import sleep
+
+
+#base_url = 'https://www.lagou.com/zhaopin/Python/?labelWords=label'
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'
+}
+
+
+for page in range(0,31):
+    base_url = 'https://www.lagou.com/zhaopin/Python/{}/?filterOption=3&sid=bf0b766ec2d74a50a11ec39e274284af'.format(page)
+    print('\n正在下载第{}页数据\n'.format(page))
+    response = requests.get(url=base_url,headers=headers)
+    html_data = response.text
+    selector = parsel.Selector(html_data)
+    result_list = selector.xpath('//li[@class="con_list_item default_list"]')
+    for sel in result_list:
+        money = sel.xpath('./@data-salary').extract_first()   #工资
+        recruiters = sel.xpath('./@data-company').extract_first()   #招聘方
+        work = sel.xpath('./@data-positionname').extract_first()   #工作
+        work_data = '工资:' + money + ' ' + '招聘方:' + recruiters + ' ' + '工作:' + work
+        
+        with open('data.txt',mode='a+',encoding='utf-8') as f:
+            f.write(work_data + '\n')
+            print('保存完成:',work_data)
+            sleep(1)
